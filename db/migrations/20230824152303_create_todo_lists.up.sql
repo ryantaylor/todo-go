@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS todo_lists(
+    id bigserial PRIMARY KEY,
+    name VARCHAR(300) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
