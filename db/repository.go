@@ -10,7 +10,11 @@ type Record interface {
 	models.User | models.TodoList | models.Todo
 }
 
-func CreateRecord[T Record](db *sqlx.DB, record *T, tableName string, attributes sq.Eq) error {
+type CreateRecordDB interface {
+	QueryRowx(query string, args ...interface{}) *sqlx.Row
+}
+
+func CreateRecord[T Record](db CreateRecordDB, record *T, tableName string, attributes sq.Eq) error {
 	query, args, err := Builder.Insert(tableName).SetMap(attributes).Suffix(ReturningAll).ToSql()
 	if err != nil {
 		return err
@@ -19,7 +23,11 @@ func CreateRecord[T Record](db *sqlx.DB, record *T, tableName string, attributes
 	return db.QueryRowx(query, args...).StructScan(record)
 }
 
-func FindRecord[T Record](db *sqlx.DB, record *T, tableName string, where sq.Eq) error {
+type FindRecordDB interface {
+	Get(dest interface{}, query string, args ...interface{}) error
+}
+
+func FindRecord[T Record](db FindRecordDB, record *T, tableName string, where sq.Eq) error {
 	query, args, err := Builder.Select("*").From(tableName).Where(where).ToSql()
 	if err != nil {
 		return err
@@ -28,7 +36,7 @@ func FindRecord[T Record](db *sqlx.DB, record *T, tableName string, where sq.Eq)
 	return db.Get(record, query, args...)
 }
 
-func FindRecordByID[T Record](db *sqlx.DB, record *T, tableName string, id int) error {
+func FindRecordByID[T Record](db FindRecordDB, record *T, tableName string, id int) error {
 	return FindRecord(db, record, tableName, sq.Eq{"id": id})
 }
 
