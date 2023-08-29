@@ -1,7 +1,8 @@
-package user
+package todo_list
 
 import (
 	"context"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 )
 
 type MiddlewareRepository interface {
-	FindUserByID(id int) (models.User, error)
+	FindTodoList(where sq.Eq, includeTodos bool) (models.TodoList, error)
 }
 
 type Middleware struct {
@@ -22,11 +23,12 @@ func NewMiddleware(repo MiddlewareRepository) Middleware {
 
 func (step *Middleware) Context(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
-		var user models.User
+		var todoList models.TodoList
 		var err error
+		userRecord := req.Context().Value("user").(models.User)
 
-		if userID, err := strconv.Atoi(chi.URLParam(req, "userID")); userID != 0 {
-			user, err = step.repo.FindUserByID(userID)
+		if todoListID, err := strconv.Atoi(chi.URLParam(req, "todoListID")); todoListID != 0 {
+			todoList, err = step.repo.FindTodoList(sq.Eq{"id": todoListID, "user_id": userRecord.ID}, false)
 		} else {
 			panic(err)
 		}
@@ -34,7 +36,7 @@ func (step *Middleware) Context(next http.Handler) http.Handler {
 			panic(err)
 		}
 
-		ctx := context.WithValue(req.Context(), "user", user)
+		ctx := context.WithValue(req.Context(), "todoList", todoList)
 		next.ServeHTTP(writer, req.WithContext(ctx))
 	})
 }

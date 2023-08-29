@@ -1,6 +1,6 @@
-package user
+package models
 
-type Record struct {
+type User struct {
 	ID        int
 	Email     string
 	CreatedAt string `db:"created_at"`

@@ -3,11 +3,12 @@ package user
 import (
 	"github.com/go-chi/render"
 	"net/http"
+	"todo/models"
 )
 
 type HandlerRepository interface {
-	CreateUser(email string) (Record, error)
-	FindUserByID(id int) (Record, error)
+	CreateUser(email string) (models.User, error)
+	FindUserByID(id int) (models.User, error)
 }
 
 type Handler struct {
@@ -31,7 +32,7 @@ type Response struct {
 	Email string `json:"email"`
 }
 
-func NewResponse(record *Record) *Response {
+func NewResponse(record *models.User) *Response {
 	return &Response{record.ID, record.Email}
 }
 
@@ -60,7 +61,7 @@ func (handler *Handler) Create(writer http.ResponseWriter, req *http.Request) {
 }
 
 func (handler *Handler) Find(writer http.ResponseWriter, req *http.Request) {
-	user := req.Context().Value("user").(Record)
+	user := req.Context().Value("user").(models.User)
 
 	err := render.Render(writer, req, NewResponse(&user))
 	if err != nil {

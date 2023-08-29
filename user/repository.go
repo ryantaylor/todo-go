@@ -1,13 +1,10 @@
 package user
 
 import (
-	"github.com/Masterminds/squirrel"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"todo/db"
-)
-
-const (
-	tableName = "users"
+	"todo/models"
 )
 
 type Repository struct {
@@ -18,30 +15,19 @@ func NewRepository(db *sqlx.DB) Repository {
 	return Repository{db}
 }
 
-func (repo *Repository) CreateUser(email string) (Record, error) {
-	record := Record{}
+func (repo *Repository) CreateUser(email string) (models.User, error) {
+	record := models.User{}
+	attributes := sq.Eq{"email": email}
 
-	query, args, err := db.Builder.Insert(tableName).SetMap(squirrel.Eq{
-		"email": email,
-	}).Suffix(db.ReturningAll).ToSql()
-	if err != nil {
-		return record, err
-	}
-
-	err = repo.db.QueryRowx(query, args...).StructScan(&record)
+	err := db.CreateRecord(repo.db, &record, db.TableUsers, attributes)
 
 	return record, err
 }
 
-func (repo *Repository) FindUserByID(id int) (Record, error) {
-	record := Record{}
+func (repo *Repository) FindUserByID(id int) (models.User, error) {
+	record := models.User{}
 
-	query, args, err := db.Builder.Select("*").From(tableName).Where(squirrel.Eq{"id": id}).ToSql()
-	if err != nil {
-		return record, err
-	}
-
-	err = repo.db.Get(&record, query, args...)
+	err := db.FindRecordByID(repo.db, &record, db.TableUsers, id)
 
 	return record, err
 }
