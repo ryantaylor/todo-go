@@ -4,3 +4,6 @@ create-migration:
 migrate:
 	@printf ">> Running migrations\n"
 	@migrate -database "postgres://hellofreshdev:hellofreshdev@localhost:5432/todo?sslmode=disable" -path db/migrations up
+
+test:
+	@ginkgo -r

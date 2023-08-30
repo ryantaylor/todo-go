@@ -9,9 +9,8 @@ import (
 	"todo/user"
 )
 
-var repo user.Repository
-
 var _ = Describe("Repository", func() {
+	var repo user.Repository
 	var email string
 	var err error
 
