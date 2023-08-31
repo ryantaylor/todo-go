@@ -6,4 +6,7 @@ migrate:
 	@migrate -database "postgres://hellofreshdev:hellofreshdev@localhost:5432/todo?sslmode=disable" -path db/migrations up
 
 test:
-	@ginkgo -r
+	@ginkgo -r --skip-package integration
+
+test-integration:
+	@ginkgo run integration

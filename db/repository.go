@@ -40,7 +40,29 @@ func FindRecordByID[T Record](db FindRecordDB, record *T, tableName string, id i
 	return FindRecord(db, record, tableName, sq.Eq{"id": id})
 }
 
-func ListRecords[T Record](db *sqlx.DB, records *[]T, tableName string, where sq.Eq) error {
+func FindLastRecord[T Record](db FindRecordDB, record *T, tableName string) error {
+	query, args, err := Builder.Select("*").From(tableName).OrderBy("created_at DESC").Limit(1).ToSql()
+	if err != nil {
+		return err
+	}
+
+	return db.Get(record, query, args...)
+}
+
+func CountRecords(db FindRecordDB, count *int, tableName string, where sq.Eq) error {
+	query, args, err := Builder.Select("COUNT(*)").From(tableName).Where(where).ToSql()
+	if err != nil {
+		return err
+	}
+
+	return db.Get(count, query, args...)
+}
+
+type ListRecordDB interface {
+	Select(dest interface{}, query string, args ...interface{}) error
+}
+
+func ListRecords[T Record](db ListRecordDB, records *[]T, tableName string, where sq.Eq) error {
 	query, args, err := Builder.Select("*").From(tableName).Where(where).ToSql()
 	if err != nil {
 		return err

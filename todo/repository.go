@@ -2,16 +2,20 @@ package todo
 
 import (
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
 	"todo/db"
 	"todo/models"
 )
 
-type Repository struct {
-	db *sqlx.DB
+type RepositoryDB interface {
+	db.CreateRecordDB
+	db.ListRecordDB
 }
 
-func NewRepository(db *sqlx.DB) Repository {
+type Repository struct {
+	db RepositoryDB
+}
+
+func NewRepository(db RepositoryDB) Repository {
 	return Repository{db}
 }
 
