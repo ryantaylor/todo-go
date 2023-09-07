@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"net/http"
 	"net/http/httptest"
+	"todo/infra"
 	"todo/user"
 )
 
@@ -27,9 +28,14 @@ var _ = Describe("Handler", func() {
 
 	var _ = Describe("Create", func() {
 		var input user.CreateRequest
+		var email string
 
-		BeforeEach(func() {
-			input = user.CreateRequest{Email: faker.Email()}
+		JustBeforeEach(func() {
+			if email == "" {
+				email = faker.Email()
+			}
+
+			input = user.CreateRequest{Email: email}
 			jsonBody, err := json.Marshal(input)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -40,7 +46,7 @@ var _ = Describe("Handler", func() {
 		})
 
 		It("Returns a created status code", func() {
-			Expect(recorder.Code).To(Equal(http.StatusCreated))
+			Expect(recorder).To(HaveHTTPStatus(http.StatusCreated))
 		})
 
 		It("Returns an accurate payload", func() {
@@ -54,29 +60,33 @@ var _ = Describe("Handler", func() {
 		})
 
 		It("Creates a user", func() {
-			Expect(len(repo.Records)).To(Equal(1))
+			Expect(len(repo.RecordsByID)).To(Equal(1))
 
-			for _, record := range repo.Records {
+			for _, record := range repo.RecordsByID {
 				Expect(record.Email).To(Equal(input.Email))
 			}
 		})
 
 		When("A user with the given email already exists", func() {
 			BeforeEach(func() {
-				_, err := repo.CreateUser(input.Email)
+				email = faker.Email()
+				_, err := repo.CreateUser(email)
 				Expect(err).To(BeNil())
 			})
 
 			It("Returns an unprocessable entity status code", func() {
-				Expect(recorder.Code).To(Equal(http.StatusUnprocessableEntity))
+				Expect(recorder).To(HaveHTTPStatus(http.StatusUnprocessableEntity))
 			})
 
 			It("Returns an error payload", func() {
-				Expect(true).To(BeTrue())
+				var body infra.ErrResponse
+				err := json.Unmarshal(recorder.Body.Bytes(), &body)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(body.Message).ToNot(BeNil())
 			})
 
 			It("Does not create a user", func() {
-				Expect(len(repo.Records)).To(BeZero())
+				Expect(len(repo.RecordsByID)).To(Equal(1))
 			})
 		})
 	})

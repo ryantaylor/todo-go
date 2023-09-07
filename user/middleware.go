@@ -9,7 +9,7 @@ import (
 )
 
 type MiddlewareRepository interface {
-	FindUserByID(id int) (models.User, error)
+	FindUserByID(id int) (*models.User, error)
 }
 
 type Middleware struct {
@@ -22,7 +22,7 @@ func NewMiddleware(repo MiddlewareRepository) Middleware {
 
 func (step *Middleware) Context(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
-		var user models.User
+		var user *models.User
 		var err error
 
 		if userID, err := strconv.Atoi(chi.URLParam(req, "userID")); userID != 0 {

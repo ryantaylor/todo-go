@@ -1,10 +1,12 @@
 package user_test
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-faker/faker/v4"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	database "todo/db"
 	"todo/models"
 	"todo/user"
 )
@@ -39,11 +41,22 @@ var _ = Describe("Repository", func() {
 				_, err := repo.CreateUser(email)
 				Expect(err).ToNot(BeNil())
 			})
+
+			It("Does not return a user", func() {
+				user, _ := repo.CreateUser(email)
+				Expect(user).To(BeNil())
+			})
+
+			It("Does not create a record", func() {
+				var count int
+				err = database.CountRecords(db, &count, database.TableUsers, sq.Eq{})
+				Expect(count).To(BeZero())
+			})
 		})
 	})
 
 	var _ = Describe("FindUserByID", func() {
-		var user models.User
+		var user *models.User
 
 		BeforeEach(func() {
 			user, err = repo.CreateUser(email)

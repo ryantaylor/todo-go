@@ -7,7 +7,6 @@ import (
 	"github.com/go-faker/faker/v4"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"io"
 	"net/http"
 	"todo/db"
 	"todo/models"
@@ -44,7 +43,7 @@ var _ = Describe("Users", func() {
 		})
 
 		It("Returns the correct status code", func() {
-			Expect(res.StatusCode).To(Equal(http.StatusCreated))
+			Expect(res).To(HaveHTTPStatus(http.StatusCreated))
 		})
 
 		It("Returns the correct response body", func() {
@@ -58,9 +57,7 @@ var _ = Describe("Users", func() {
 				"email": "%v"
 			}`, user.ID, email)
 
-			bytes, err := io.ReadAll(res.Body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(bytes).To(MatchJSON(expected))
+			Expect(res).To(HaveHTTPBody(MatchJSON(expected)))
 		})
 	})
 })
